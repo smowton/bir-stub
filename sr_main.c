@@ -33,6 +33,11 @@
 #include "sr_router.h"
 #include "sr_rt.h"
 
+#include "lwip/sys.h"
+// For sys_thread_new
+
+#include "cli_main.h"
+
 extern char* optarg;
 struct sr_instance global_sr;
 
@@ -46,6 +51,8 @@ struct sr_instance global_sr;
 #define DEFAULT_SERVER "171.67.71.18"
 #define DEFAULT_RTABLE "rtable"
 #define DEFAULT_TOPO 0
+
+uint16_t cli_port = 2300;
 
 static void usage(char* );
 static void sr_init_instance(struct sr_instance* );
@@ -167,6 +174,9 @@ int main(int argc, char **argv)
 
     /* call router init (for arp subsystem etc.) */
     sr_init(&global_sr);
+
+    /* Start the CLI module */
+    sys_thread_new(cli_main, (void*)&cli_port);
 
     /* -- whizbang main loop ;-) */
     while( sr_read_from_server(&global_sr) == 1);

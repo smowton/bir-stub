@@ -70,7 +70,11 @@ void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
 struct sr_instance* get_sr();
 /** returns the ip of the interface this will be sent via */
 uint32_t sr_integ_findsrcip(uint32_t dest /* nbo */);
-
+uint32_t sr_integ_ip_output(uint8_t* payload /* given */,
+                            uint8_t  proto,
+                            uint32_t src, /* nbo */
+                            uint32_t dest, /* nbo */
+                            int len);
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );
 void sr_set_ether_ip(struct sr_instance* , uint32_t );

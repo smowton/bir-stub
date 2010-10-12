@@ -19,13 +19,14 @@
 #define  __USE_BSD 1
 #include <sys/socket.h>
 #include <netinet/in_systm.h>
-#include <netinet/ip.h>
 
 #include "lwip/ip_addr.h"
 #include "lwip/ip.h"
 #include "lwip/netif.h"
 #include "lwip/pbuf.h"
 #include "lwip/transport_subsys.h"
+
+#include "sr_router.h"
 
 
 /*-----------------------------------------------------------------------------

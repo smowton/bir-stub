@@ -28,6 +28,21 @@ typedef struct cli_client_t {
     int verbose;               /* print empty HW entries if verbose true */
 } cli_client_t;
 
+
+#ifdef _STANDALONE_CLI_
+#   define THREAD_RETURN_NIL return NULL
+#   define THREAD_RETURN_TYPE void*
+#   define make_thread(func,arg) { \
+        pthread_t tid;                                      \
+        true_or_die( pthread_create(&tid,NULL,func,arg)==0, \
+                     "pthread_create failed" );             \
+    }
+#else
+#   define THREAD_RETURN_NIL return
+#   define THREAD_RETURN_TYPE void
+#   define make_thread(func,arg) sys_thread_new(func,arg);
+#endif
+
 /**
  * Starts the command-line interface server.  Returns when the server terminates
  * or encounters an unrecoverable error.
@@ -36,6 +51,6 @@ typedef struct cli_client_t {
  *
  * @return CLI_SHUTDOWN on normal termination, CLI_ERROR on unrecoverable error
  */
-int cli_main( uint16_t port );
+THREAD_RETURN_TYPE cli_main( void* port_p );
 
 #endif /* CLI_MAIN_H */

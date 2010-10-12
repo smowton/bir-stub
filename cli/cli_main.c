@@ -23,20 +23,6 @@
 /* forward decl */
 void real_close( int fd );
 
-#ifdef _STANDALONE_CLI_
-#   define THREAD_RETURN_NIL return NULL
-#   define THREAD_RETURN_TYPE void*
-#   define make_thread(func,arg) { \
-        pthread_t tid;                                      \
-        true_or_die( pthread_create(&tid,NULL,func,arg)==0, \
-                     "pthread_create failed" );             \
-    }
-#else
-#   define THREAD_RETURN_NIL return
-#   define THREAD_RETURN_TYPE void
-#   define make_thread(func,arg) sys_thread_new(func,arg);
-#endif
-
 static pthread_mutex_t parser_lock;
 
 /** Cleans up client_to_free and returns the next client */
@@ -150,7 +136,7 @@ THREAD_RETURN_TYPE cli_client_handler_main( void* pclient ) {
     }
 }
 
-int cli_main( uint16_t port ) {
+THREAD_RETURN_TYPE cli_main( void* port_p ) {
     struct sockaddr_in addr;
     struct sockaddr client_addr;
     int bindfd;
@@ -161,6 +147,8 @@ int cli_main( uint16_t port ) {
 #else
     int sock_len;
 #endif
+
+    uint16_t port = *((uint16_t*)port_p);
 
     sock_len = sizeof(struct sockaddr);
     pthread_mutex_init( &parser_lock, NULL );
@@ -173,7 +161,7 @@ int cli_main( uint16_t port ) {
     bindfd = socket( AF_INET, SOCK_STREAM, 0 );
     if( bindfd == -1 ) {
         fprintf( stderr, "Error: unable to create a IPv4 TCP socket" );
-        return CLI_ERROR;
+        return;
     }
 
     /* bind to the requested port */
@@ -182,7 +170,7 @@ int cli_main( uint16_t port ) {
     memset(&(addr.sin_zero), 0, sizeof(addr.sin_zero));
     if( bind(bindfd, (struct sockaddr*)&addr, sizeof(struct sockaddr)) ) {
         fprintf( stderr, "Error: CLI unable to bind to port %u", port );
-        return CLI_ERROR;
+        return;
     }
 
     /* listen for clients */
@@ -217,5 +205,5 @@ int cli_main( uint16_t port ) {
         make_thread( cli_client_handler_main, client );
     }
 
-    return CLI_SHUTDOWN;
+    return;
 }
