@@ -66,15 +66,21 @@ int sr_read_from_server(struct sr_instance* );
 
 /* -- sr_router.c -- */
 void sr_init(struct sr_instance* );
+void sr_integ_hw_setup(struct sr_instance* sr);
 void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
 struct sr_instance* get_sr();
-/** returns the ip of the interface this will be sent via */
 uint32_t sr_integ_findsrcip(uint32_t dest /* nbo */);
 uint32_t sr_integ_ip_output(uint8_t* payload /* given */,
                             uint8_t  proto,
                             uint32_t src, /* nbo */
                             uint32_t dest, /* nbo */
                             int len);
+int sr_integ_low_level_output(struct sr_instance* sr /* borrowed */,
+                             uint8_t* buf /* borrowed */ ,
+                             unsigned int len,
+			      const char* iface /* borrowed */);
+void sr_integ_close(struct sr_instance* sr);
+
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );
 void sr_set_ether_ip(struct sr_instance* , uint32_t );

@@ -456,12 +456,14 @@ int sr_read_from_server_expect(struct sr_instance* sr /* borrowed */, int expect
             /* -------------     VNSHWINFO     -------------------- */
 
         case VNSHWINFO:
+	  fprintf(stderr, "Got HWINFO\n");
             sr_handle_hwinfo(sr,(c_hwinfo*)buf);
             if(sr_verify_routing_table(sr) != 0)
             {
                 fprintf(stderr,"Routing table not consistent with hardware\n");
                 return -1;
             }
+	    sr_integ_hw_setup(sr);
             printf(" <-- Ready to process packets --> \n");
             break;
 
