@@ -20,6 +20,14 @@
 #include "sr_router.h"
 #include "sr_protocol.h"
 
+/* Get the global instance descriptor */
+
+struct sr_instance* get_sr() {
+
+  return &global_sr;
+
+}
+
 /*--------------------------------------------------------------------- 
  * Method: sr_init(void)
  * Scope:  Global
@@ -36,12 +44,6 @@ void sr_init(struct sr_instance* sr)
     /* Add initialization code here! */
 
 } /* -- sr_init -- */
-
-struct sr_instance* get_sr() {
-
-  return &global_sr;
-
-}
 
 /*---------------------------------------------------------------------
  * Method: sr_handlepacket(uint8_t* p,char* interface)
