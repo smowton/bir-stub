@@ -34,6 +34,7 @@
 #include "sr_rt.h"
 
 extern char* optarg;
+struct sr_instance global_sr;
 
 /*-----------------------------------------------------------------------------
  *---------------------------------------------------------------------------*/
@@ -67,7 +68,6 @@ int main(int argc, char **argv)
     unsigned int port = DEFAULT_PORT;
     unsigned int topo = DEFAULT_TOPO;
     char *logfile = 0;
-    struct sr_instance sr;
 
     printf("Using %s\n", VERSION_INFO);
 
@@ -110,30 +110,36 @@ int main(int argc, char **argv)
     } /* -- while -- */
 
     /* -- zero out sr instance -- */
-    sr_init_instance(&sr);
+    sr_init_instance(&global_sr);
 
     /* -- set up routing table from file -- */
     if(template == NULL) {
-        sr.template[0] = '\0';
-        sr_load_rt_wrap(&sr, rtable);
+        global_sr.template[0] = '\0';
+        sr_load_rt_wrap(&global_sr, rtable);
     }
     else
-        strncpy(sr.template, template, 30);
+        strncpy(global_sr.template, template, 30);
 
-    sr.topo_id = topo;
-    strncpy(sr.host,host,32);
-    strncpy(sr.auth_key_fn,auth_key_file,64);
+    global_sr.topo_id = topo;
+    strncpy(global_sr.host,host,32);
+    strncpy(global_sr.auth_key_fn,auth_key_file,64);
+
+    if ( gethostname(global_sr.lhost, 32) == -1 )
+    {
+        perror("gethostname(..)");
+        return 1;
+    }
 
     if(! user )
-    { sr_set_user(&sr); }
+    { sr_set_user(&global_sr); }
     else
-    { strncpy(sr.user, user, 32); }
+    { strncpy(global_sr.user, user, 32); }
 
     /* -- set up file pointer for logging of raw packets -- */
     if(logfile != 0)
     {
-        sr.logfile = sr_dump_open(logfile,0,PACKET_DUMP_SIZE);
-        if(!sr.logfile)
+        global_sr.logfile = sr_dump_open(logfile,0,PACKET_DUMP_SIZE);
+        if(!global_sr.logfile)
         {
             fprintf(stderr,"Error opening up dump file %s\n",
                     logfile);
@@ -141,7 +147,7 @@ int main(int argc, char **argv)
         }
     }
 
-    Debug("Client %s connecting to Server %s:%d\n", sr.user, server, port);
+    Debug("Client %s connecting to Server %s:%d\n", global_sr.user, server, port);
     if(template)
         Debug("Requesting topology template %s\n", template);
     else {
@@ -149,23 +155,23 @@ int main(int argc, char **argv)
     }
 
     /* connect to server and negotiate session */
-    if(sr_connect_to_server(&sr,port,server) == -1)
+    if(sr_connect_to_server(&global_sr,port,server) == -1)
     {
         return 1;
     }
 
     if(template != NULL) { /* we've recv'd the rtable now, so read it in */
         Debug("Connected to new instantiation of topology template %s\n", template);
-        sr_load_rt_wrap(&sr, "rtable.vrhost");
+        sr_load_rt_wrap(&global_sr, "rtable.vrhost");
     }
 
     /* call router init (for arp subsystem etc.) */
-    sr_init(&sr);
+    sr_init(&global_sr);
 
     /* -- whizbang main loop ;-) */
-    while( sr_read_from_server(&sr) == 1);
+    while( sr_read_from_server(&global_sr) == 1);
 
-    sr_destroy_instance(&sr);
+    sr_destroy_instance(&global_sr);
 
     return 0;
 }/* -- main -- */

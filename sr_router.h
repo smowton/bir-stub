@@ -45,6 +45,7 @@ struct sr_instance
     int  sockfd;   /* socket to server */
     char user[32]; /* user name */
     char host[32]; /* host name */
+    char lhost[32];
     char template[30]; /* template name if any */
     char auth_key_fn[64]; /* auth key filename */
     unsigned short topo_id;
@@ -56,6 +57,7 @@ struct sr_instance
 
 /* -- sr_main.c -- */
 int sr_verify_routing_table(struct sr_instance* sr);
+extern struct sr_instance global_sr;
 
 /* -- sr_vns_comm.c -- */
 int sr_send_packet(struct sr_instance* , uint8_t* , unsigned int , const char*);
@@ -65,6 +67,9 @@ int sr_read_from_server(struct sr_instance* );
 /* -- sr_router.c -- */
 void sr_init(struct sr_instance* );
 void sr_handlepacket(struct sr_instance* , uint8_t * , unsigned int , char* );
+struct sr_instance* get_sr();
+/** returns the ip of the interface this will be sent via */
+uint32_t sr_integ_findsrcip(uint32_t dest /* nbo */);
 
 /* -- sr_if.c -- */
 void sr_add_interface(struct sr_instance* , const char* );

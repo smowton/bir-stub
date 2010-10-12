@@ -37,7 +37,11 @@ void sr_init(struct sr_instance* sr)
 
 } /* -- sr_init -- */
 
+struct sr_instance* get_sr() {
 
+  return &global_sr;
+
+}
 
 /*---------------------------------------------------------------------
  * Method: sr_handlepacket(uint8_t* p,char* interface)
@@ -69,6 +73,53 @@ void sr_handlepacket(struct sr_instance* sr,
 
 }/* end sr_ForwardPacket */
 
+uint32_t sr_integ_findsrcip(uint32_t dest /* nbo */) {
+
+    fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    fprintf(stderr, "!!! Tranport layer called ip_findsrcip(..) this must be !!!\n");
+    fprintf(stderr, "!!! defined to return the correct source address        !!!\n");
+    fprintf(stderr, "!!! given a destination                                 !!!\n ");
+    fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+    assert(0);
+
+    /* --
+     * e.g.
+     *
+     * struct sr_instance* sr = sr_get_global_instance();
+     * struct my_router* mr = (struct my_router*)
+     *                              sr_get_subsystem(sr);
+     * return my_findsrcip(mr, dest);
+     * -- */
+
+    return 0;
+}
+
+uint32_t sr_integ_ip_output(uint8_t* payload /* given */,
+                            uint8_t  proto,
+                            uint32_t src, /* nbo */
+                            uint32_t dest, /* nbo */
+                            int len)
+{
+    fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    fprintf(stderr, "!!! Tranport layer called sr_integ_ip_output(..)        !!!\n");
+    fprintf(stderr, "!!! this must be defined to handle the network          !!!\n ");
+    fprintf(stderr, "!!! level functionality of transport packets            !!!\n ");
+    fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+    assert(0);
+
+    /* --
+     * e.g.
+     *
+     * struct sr_instance* sr = sr_get_global_instance();
+     * struct my_router* mr = (struct my_router*)
+     *                              sr_get_subsystem(sr);
+     * return my_ip_output(mr, payload, proto, src, dest, len);
+     * -- */
+
+    return 0;
+} /* -- ip_integ_route -- */
 
 /*--------------------------------------------------------------------- 
  * Method:
