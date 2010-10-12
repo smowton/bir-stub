@@ -32,6 +32,9 @@
 #include "sr_dumper.h"
 #include "sr_router.h"
 #include "sr_rt.h"
+#include "lwip/tcp.h"
+#include "lwip/memp.h"
+#include "lwip/transport_subsys.h"
 
 #include "lwip/sys.h"
 // For sys_thread_new
@@ -62,6 +65,23 @@ static void sr_load_rt_wrap(struct sr_instance* sr, char* rtable);
 
 /*-----------------------------------------------------------------------------
  *---------------------------------------------------------------------------*/
+
+/*-----------------------------------------------------------------------------
+ * Method: sr_lwip_transport_startup(..)
+ * Scope: local
+ *---------------------------------------------------------------------------*/
+
+static int sr_lwip_transport_startup(void)
+{
+    sys_init();
+    mem_init();
+    memp_init();
+    pbuf_init();
+
+    transport_subsys_init(0, 0);
+
+    return 0;
+} /* -- sr_lwip_transport_startup -- */
 
 int main(int argc, char **argv)
 {
@@ -116,6 +136,9 @@ int main(int argc, char **argv)
         } /* switch */
     } /* -- while -- */
 
+    /* -- required by lwip, must be called from the main thread -- */
+    sys_thread_init();
+
     /* -- zero out sr instance -- */
     sr_init_instance(&global_sr);
 
@@ -153,6 +176,8 @@ int main(int argc, char **argv)
             exit(1);
         }
     }
+
+    sr_lwip_transport_startup();
 
     Debug("Client %s connecting to Server %s:%d\n", global_sr.user, server, port);
     if(template)
