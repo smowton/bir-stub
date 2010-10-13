@@ -11,6 +11,11 @@ all : sr
 
 CC = gcc
 
+# MODE controls whether the router gets/sends packets from/to the NetFPGA or VNS
+MODE_NETFPGA = -D_CPUMODE_
+MODE_VNS     =
+MODE = $(MODE_NETFPGA)
+
 include Makefile.common
 
 PFLAGS= -follow-child-processes=yes -cache-dir=/tmp/${USER}
@@ -18,7 +23,8 @@ PURIFY= purify ${PFLAGS}
 
 sr_SRCS = sr_router.c sr_main.c  \
           sr_if.c sr_rt.c sr_vns_comm.c   \
-          sr_dumper.c sha1.c real_socket_helper.c sr_lwtcp_glue.c
+          sr_dumper.c sha1.c real_socket_helper.c \
+	  sr_lwtcp_glue.c sr_cpu_extension_nf2.c nf2util.c
 
 sr_OBJS = $(patsubst %.c,%.o,$(sr_SRCS))
 sr_DEPS = $(patsubst %.c,.%.d,$(sr_SRCS))

@@ -19,5 +19,5 @@ ARCH = -D_DARWIN_
 SOCK = -lresolv
 endif
 
-CFLAGS = -g -Wall -std=gnu99 -D_DEBUG_ $(ARCH) -I cli -I lwtcp
+CFLAGS = -g -Wall -std=gnu99 -D_DEBUG_ $(ARCH) -I cli -I lwtcp $(MODE)
 LIBS= $(SOCK) -lm -lpthread
