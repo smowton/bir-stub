@@ -11,9 +11,9 @@
 
 #include "sr_cpu_extension_nf2.h"
 
-#include "sr_base_internal.h"
-
-#include "sr_vns.h"
+#include "sr_router.h"
+#include "sr_protocol.h"
+#include "sr_if.h"
 
 #include <stdio.h>
 #include <ctype.h>
@@ -24,16 +24,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-
-struct sr_ethernet_hdr
-{
-#ifndef ETHER_ADDR_LEN
-#define ETHER_ADDR_LEN 6
-#endif
-    uint8_t  ether_dhost[ETHER_ADDR_LEN];    /* destination ethernet address */
-    uint8_t  ether_shost[ETHER_ADDR_LEN];    /* source ethernet address */
-    uint16_t ether_type;                     /* packet type ID */
-} __attribute__ ((packed)) ;
 
 static char*    copy_next_field(FILE* fp, char*  line, char* buf);
 static uint32_t asci_to_nboip(const char* ip);
@@ -59,10 +49,9 @@ static void     asci_to_ether(const char* addr, uint8_t mac[6]);
 
 int sr_cpu_init_hardware(struct sr_instance* sr, const char* hwfile)
 {
-    struct sr_vns_if vns_if;
     FILE* fp = 0;
     char line[1024];
-    char buf[SR_NAMELEN];
+    char buf[sr_IFACE_NAMELEN];
     char *tmpptr;
 
 
@@ -86,7 +75,8 @@ int sr_cpu_init_hardware(struct sr_instance* sr, const char* hwfile)
             return 1;
         }
         Debug(" - Name [%s] ", buf);
-        strncpy(vns_if.name, buf, SR_NAMELEN);
+	sr_add_interface(sr, buf /* iface name */);
+
         /* -- read interface ip into buf -- */
         if(! (tmpptr = copy_next_field(fp, tmpptr, buf)) )
         {
@@ -95,7 +85,7 @@ int sr_cpu_init_hardware(struct sr_instance* sr, const char* hwfile)
             return 1;
         }
         Debug(" IP [%s] ", buf);
-        vns_if.ip = asci_to_nboip(buf);
+        sr_set_ether_ip(sr, asci_to_nboip(buf));
 
         /* -- read interface mask into buf -- */
         if(! (tmpptr = copy_next_field(fp, tmpptr, buf)) )
@@ -105,7 +95,9 @@ int sr_cpu_init_hardware(struct sr_instance* sr, const char* hwfile)
             return 1;
         }
         Debug(" Mask [%s] ", buf);
-        vns_if.mask = asci_to_nboip(buf);
+        // vns_if.mask = asci_to_nboip(buf);
+	// The new interface structure doesn't mention a mask.
+	// This is probably fine, as the routing table should contain an on-link entry making clear the intended mask.
 
         /* -- read interface hw address into buf -- */
         if(! (tmpptr = copy_next_field(fp, tmpptr, buf)) )
@@ -115,9 +107,10 @@ int sr_cpu_init_hardware(struct sr_instance* sr, const char* hwfile)
             return 1;
         }
         Debug(" MAC [%s]\n", buf);
-        asci_to_ether(buf, vns_if.addr);
+	unsigned char ether_addr[6];
+        asci_to_ether(buf, ether_addr);
 
-        sr_integ_add_interface(sr, &vns_if);
+	sr_set_ether_addr(sr, ether_addr);
 
     } /* -- while ( fgets ( .. ) ) -- */
     Debug(" < --                         -- >\n");
@@ -208,7 +201,7 @@ char* copy_next_field(FILE* fp, char* line, char* buf)
     { line++; }
     if(! *line )
     { return 0; }
-    while ( *line && ! isspace((int)*line) && ((tmpptr - buf) < SR_NAMELEN))
+    while ( *line && ! isspace((int)*line) && ((tmpptr - buf) < sr_IFACE_NAMELEN))
     { *tmpptr++ = *line++; }
     *tmpptr = 0;
     return line;

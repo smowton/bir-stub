@@ -14,7 +14,7 @@
 #ifndef SR_CPU_EXTENSIONS_H
 #define SR_CPU_EXTENSIONS_H
 
-#include "sr_base_internal.h"
+#include "sr_router.h"
 
 static const uint16_t CPU_CONTROL_READ  = 0x8804;
 static const uint16_t CPU_CONTROL_WRITE = 0x8805;
