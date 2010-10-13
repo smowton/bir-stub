@@ -441,6 +441,7 @@ int sr_read_from_server_expect(struct sr_instance* sr /* borrowed */, int expect
         case VNSCLOSE:
             fprintf(stderr,"VNS server closed session.\n");
             fprintf(stderr,"Reason: %s\n",((c_close*)buf)->mErrorMessage);
+	    sr_integ_close(sr);
 
             if(buf)
             { free(buf); }
