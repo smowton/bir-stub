@@ -14,7 +14,7 @@ CC = gcc
 # MODE controls whether the router gets/sends packets from/to the NetFPGA or VNS
 MODE_NETFPGA = -D_CPUMODE_
 MODE_VNS     =
-MODE = $(MODE_NETFPGA)
+MODE = $(MODE_VNS)
 
 include Makefile.common
 
