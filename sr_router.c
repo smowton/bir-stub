@@ -20,6 +20,10 @@
 #include "sr_router.h"
 #include "sr_protocol.h"
 
+#ifdef _CPUMODE_
+#include "sr_cpu_extension_nf2.h"
+#endif
+
 /* Get the global instance descriptor */
 
 struct sr_instance* get_sr() {

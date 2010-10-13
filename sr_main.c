@@ -41,6 +41,10 @@
 
 #include "cli_main.h"
 
+#ifdef _CPUMODE_
+#include "sr_cpu_extension_nf2.h"
+#endif
+
 extern char* optarg;
 struct sr_instance global_sr;
 
@@ -136,11 +140,23 @@ int main(int argc, char **argv)
         } /* switch */
     } /* -- while -- */
 
+#ifdef _CPUMODE_
+    Debug(" \n ");
+    Debug(" < -- Starting sr in cpu mode -- >\n");
+    Debug(" \n ");
+#else
+    Debug(" < -- Starting sr in router mode  -- >\n");
+    Debug(" \n ");
+#endif /* _CPUMODE_ */
+
     /* -- required by lwip, must be called from the main thread -- */
     sys_thread_init();
 
     /* -- zero out sr instance -- */
     sr_init_instance(&global_sr);
+
+    /* call router init (for arp subsystem etc.) */
+    sr_init(&global_sr);
 
     /* -- set up routing table from file -- */
     if(template == NULL) {
@@ -150,9 +166,17 @@ int main(int argc, char **argv)
     else
         strncpy(global_sr.template, template, 30);
 
+#ifdef _CPUMODE_
+    global_sr.topo_id = 0;
+    strncpy(global_sr.host,  "cpu",    32);
+    if ( sr_cpu_init_hardware(&global_sr, CPU_HW_FILENAME) )
+    { exit(1); }
+    sr_integ_hw_setup(&global_sr);
+#else
     global_sr.topo_id = topo;
     strncpy(global_sr.host,host,32);
     strncpy(global_sr.auth_key_fn,auth_key_file,64);
+#endif /* _CPUMODE_ */
 
     if ( gethostname(global_sr.lhost, 32) == -1 )
     {
@@ -179,6 +203,7 @@ int main(int argc, char **argv)
 
     sr_lwip_transport_startup();
 
+#ifndef _CPUMODE_
     Debug("Client %s connecting to Server %s:%d\n", global_sr.user, server, port);
     if(template)
         Debug("Requesting topology template %s\n", template);
@@ -196,15 +221,18 @@ int main(int argc, char **argv)
         Debug("Connected to new instantiation of topology template %s\n", template);
         sr_load_rt_wrap(&global_sr, "rtable.vrhost");
     }
-
-    /* call router init (for arp subsystem etc.) */
-    sr_init(&global_sr);
+#endif
 
     /* Start the CLI module */
     sys_thread_new(cli_main, (void*)&cli_port);
 
+#ifdef _CPUMODE_
+    /* -- whizbang main loop ;-) */
+    while( sr_cpu_input(&global_sr) == 1);
+#else
     /* -- whizbang main loop ;-) */
     while( sr_read_from_server(&global_sr) == 1);
+#endif
 
     sr_destroy_instance(&global_sr);
 
