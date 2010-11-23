@@ -140,6 +140,22 @@ void sr_set_ether_ip(struct sr_instance* sr, uint32_t ip_nbo)
 
 } /* -- sr_set_ether_ip -- */
 
+void sr_set_ether_mask(struct sr_instance* sr, uint32_t mask_nbo)
+{
+    struct sr_if* if_walker = 0;
+
+    /* -- REQUIRES -- */
+    assert(sr->if_list);
+    
+    if_walker = sr->if_list;
+    while(if_walker->next)
+    {if_walker = if_walker->next; }
+
+    /* -- copy address -- */
+    if_walker->netmask = mask_nbo;
+
+} /* -- sr_set_ether_ip -- */
+
 /*--------------------------------------------------------------------- 
  * Method: sr_print_if_list(..)
  * Scope: Global

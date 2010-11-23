@@ -95,9 +95,7 @@ int sr_cpu_init_hardware(struct sr_instance* sr, const char* hwfile)
             return 1;
         }
         Debug(" Mask [%s] ", buf);
-        // vns_if.mask = asci_to_nboip(buf);
-	// The new interface structure doesn't mention a mask.
-	// This is probably fine, as the routing table should contain an on-link entry making clear the intended mask.
+	sr_set_ether_mask(sr, asci_to_nboip(buf));
 
         /* -- read interface hw address into buf -- */
         if(! (tmpptr = copy_next_field(fp, tmpptr, buf)) )
@@ -139,10 +137,10 @@ int sr_cpu_input(struct sr_instance* sr)
     assert(0);
 
     /*
-     * TODO: Read packet from the hardware and pass to sr_integ_input(..)
+     * TODO: Read packet from the hardware and pass to sr_handlepacket(..)
      *       e.g.
      *
-     *  sr_integ_input(sr,
+     *  sr_handlepacket(sr,
      *          packet,   * lent *
      *          len,
      *          "eth2" ); * lent *

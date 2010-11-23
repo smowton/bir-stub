@@ -198,6 +198,7 @@ int sr_handle_hwinfo(struct sr_instance* sr, c_hwinfo* hwinfo)
             case HWMASK:
                 /* Debug("Mask: %s\n",inet_ntoa(
                             *((struct in_addr*)(hwinfo->mHWInfo[i].value)))); */
+	        sr_set_ether_mask(sr, *((uint32_t*)hwinfo->mHWInfo[i].value));
                 break;
             case HWETHIP:
                 /*Debug("IP: %s\n",inet_ntoa(
